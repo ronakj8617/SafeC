@@ -1,13 +1,14 @@
 #include "utils.h"
 
-#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace safec {
 
 std::string Utils::readFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open file: " << filename << std::endl;
         return "";
     }
 
@@ -19,6 +20,10 @@ std::string Utils::readFile(const std::string& filename) {
 bool Utils::fileExists(const std::string& filename) {
     std::ifstream file(filename);
     return file.good();
+}
+
+bool Utils::isDirectory(const std::string& path) {
+    return std::filesystem::is_directory(path);
 }
 
 std::string Utils::getFileExtension(const std::string& filename) {

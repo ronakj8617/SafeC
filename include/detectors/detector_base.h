@@ -19,6 +19,7 @@ struct Vulnerability {
     Severity severity;
     int line;
     int column;
+    std::string file;  // File path where vulnerability was found
     std::string codeSnippet;
 };
 
