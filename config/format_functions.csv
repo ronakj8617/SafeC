@@ -1,0 +1,10 @@
+# Format String - Vulnerable Functions Configuration
+# Format: function_name,severity,description
+printf,HIGH,Can be exploited with user-controlled format strings
+fprintf,HIGH,Can be exploited with user-controlled format strings
+sprintf,HIGH,Can be exploited with user-controlled format strings
+snprintf,MEDIUM,Safer but still vulnerable to format string attacks
+vprintf,HIGH,Variable argument version of printf
+vfprintf,HIGH,Variable argument version of fprintf
+vsprintf,HIGH,Variable argument version of sprintf
+vsnprintf,MEDIUM,Variable argument version of snprintf

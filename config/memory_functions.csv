@@ -1,0 +1,8 @@
+# Memory Management Functions Configuration
+# Format: function_name,type,description
+malloc,ALLOC,Allocates memory on heap
+calloc,ALLOC,Allocates and zeros memory on heap
+realloc,ALLOC,Reallocates memory block
+free,FREE,Deallocates memory
+new,ALLOC,C++ memory allocation
+delete,FREE,C++ memory deallocation
