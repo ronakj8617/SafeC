@@ -16,6 +16,10 @@ class ReportGenerator {
     static void generateJSONReport(const std::vector<Vulnerability>& vulnerabilities,
                                    const std::string& filename, const std::string& outputFile);
 
+    // Generate HTML report
+    static void generateHTMLReport(const std::vector<Vulnerability>& vulnerabilities,
+                                   const std::string& filename, const std::string& outputFile);
+
    private:
     static std::string getSeverityColor(Severity sev);
 };

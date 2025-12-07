@@ -4,265 +4,299 @@
 [![C++17](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)
 [![CMake](https://img.shields.io/badge/CMake-3.15+-064F8C.svg)](https://cmake.org/)
 
-A research-oriented static analysis tool designed to detect common security vulnerabilities in C/C++ code. SafeC demonstrates advanced program analysis techniques suitable for cybersecurity research and practical vulnerability detection.
+A research-oriented static analysis framework designed to detect critical security vulnerabilities in C/C++ codebases. SafeC demonstrates advanced program analysis techniques through a modular architecture and extensible detection system.
 
 ## 🎯 Project Overview
 
-SafeC is a static analyzer built from the ground up to showcase understanding
-## ✨ Key Features
+SafeC is a comprehensive static analyzer implementing custom lexical analysis, parsing, and AST-based vulnerability detection. The tool provides production-quality analysis capabilities while maintaining code clarity suitable for research and educational purposes.
 
-### Advanced Analysis Capabilities
-- **Custom Lexer & Parser**: Built from scratch to demonstrate compiler construction principles
-- **Abstract Syntax Tree (AST)**: Complete node hierarchy with visitor pattern implementation
-- **Six Vulnerability Detectors**: Comprehensive coverage of CWE Top 25 vulnerability classes
-- **Pointer Type Support**: Parser handles pointer declarations (`int*`, `char*`, etc.)
-- **Dataflow Analysis**: Tracks variable states and memory through program execution
-- **Control Flow Analysis**: Monitors execution paths and conditional branches
+## ✨ Core Capabilities
 
-### CSV-Based Configuration System
-- **115+ Configurable Detection Rules**: Extensive vulnerability pattern database
-- **No Recompilation Required**: Modify detection rules on-the-fly
-- **Project-Specific Customization**: Add custom unsafe functions for your codebase
-- **Three Configuration Files**:
+### Advanced Analysis Infrastructure
+- **Custom Lexer & Parser**: Complete implementation demonstrating compiler construction principles
+- **Abstract Syntax Tree (AST)**: Full node hierarchy with visitor pattern architecture
+- **Six Specialized Detectors**: Comprehensive coverage of CWE Top 25 vulnerability classes
+- **Pointer Type Support**: Native handling of pointer declarations and type analysis
+- **Dataflow Analysis**: State tracking and variable lifetime monitoring
+- **Control Flow Analysis**: Path-sensitive execution flow tracking
+
+### Extensible Configuration System
+- **115+ Detection Rules**: Comprehensive vulnerability pattern database
+- **CSV-Based Configuration**: Runtime-modifiable detection rules without recompilation
+- **Project Adaptation**: Customizable rule sets for specific codebases
+- **Three Configuration Domains**:
   - `config/unsafe_functions.csv` - 36+ buffer overflow patterns
   - `config/format_functions.csv` - 29+ format string vulnerabilities
   - `config/memory_functions.csv` - 28+ memory management functions
 
-### Professional Output
-- **Console Reports**: Color-coded severity levels with detailed recommendations
-- **JSON Export**: Machine-readable output for CI/CD integration
-- **Line-Precise Locations**: Exact file, line, and column information for each finding
-- **Severity Classification**: CRITICAL, HIGH, MEDIUM, LOW severity levels with 115+ configurable patterns
+### Multi-Format Reporting
+- **Console Output**: Structured reports with severity classification
+- **JSON Export**: Machine-readable format for CI/CD integration
+- **HTML Reports**: Professional web-based vulnerability dashboards
+- **Precise Location Data**: File, line, and column-level vulnerability mapping
+- **Severity Classification**: Four-tier system (CRITICAL, HIGH, MEDIUM, LOW)
 
-This project was developed to demonstrate research capabilities in cybersecurity, specifically in the areas of program analysis and vulnerability detection.
+## 🔍 Vulnerability Detection Modules
 
-## 🔍 Detected Vulnerability Classes
-
-SafeC implements **six critical vulnerability detectors**:
+SafeC implements six specialized detection modules targeting distinct vulnerability classes:
 
 ### 1. Buffer Overflow Detection
-- Identifies unsafe functions (`strcpy`, `strcat`, `sprintf`, `gets`, and 36+ more)
-- Analyzes array bounds in indexing operations
-- Tracks buffer sizes through dataflow analysis
-- **CSV Configurable**: 36+ unsafe functions in `config/unsafe_functions.csv`
+Identifies memory safety violations through bounds checking and unsafe function analysis:
+- Pattern matching for 36+ unsafe functions (`strcpy`, `strcat`, `sprintf`, `gets`, etc.)
+- Array bounds analysis for indexing operations
+- Buffer size tracking through dataflow analysis
+- **Configuration**: Extensible via `config/unsafe_functions.csv`
 - **Severity**: HIGH to CRITICAL
 
 ### 2. Use-After-Free Detection
-- Tracks memory allocation and deallocation (`malloc`, `free`, `new`, `delete`)
-- Monitors pointer lifetime across scopes
-- Detects pointer dereferences after `free`/`delete`
-- Identifies double-free vulnerabilities
+Tracks memory lifecycle to identify temporal safety violations:
+- Monitors allocation/deallocation pairs (`malloc`/`free`, `new`/`delete`)
+- Pointer lifetime analysis across scope boundaries
+- Post-deallocation dereference detection
+- Double-free vulnerability identification
 - **Severity**: CRITICAL
 
 ### 3. Memory Leak Detection
-- Identifies allocated memory without corresponding deallocation
-- Tracks memory through function calls and returns
-- Detects leaks in error handling paths
-- **CSV Configurable**: 28+ memory management functions in `config/memory_functions.csv`
+Identifies resource management failures through allocation tracking:
+- Unmatched allocation/deallocation detection
+- Cross-function memory tracking
+- Error path leak analysis
+- **Configuration**: 28+ tracked functions in `config/memory_functions.csv`
 - **Severity**: MEDIUM
 
-### 4. Format String Vulnerabilities
-- Detects user-controlled format strings in `printf` family functions
-- Validates format specifier count vs. argument count
-- Identifies dangerous `%n` specifiers
-- **CSV Configurable**: 29+ format functions in `config/format_functions.csv`
+### 4. Format String Vulnerability Detection
+Analyzes format string operations for injection vulnerabilities:
+- User-controlled format string detection
+- Format specifier validation and argument count verification
+- Dangerous specifier identification (`%n`)
+- **Configuration**: 29+ monitored functions in `config/format_functions.csv`
 - **Severity**: HIGH to CRITICAL
 
 ### 5. Integer Overflow Detection
-- Analyzes arithmetic operations for potential overflows
-- Checks array index calculations
-- Detects overflow in memory allocation size calculations
+Identifies arithmetic operations susceptible to overflow conditions:
+- Binary operation overflow analysis
+- Array index calculation validation
+- Memory allocation size overflow detection
 - **Severity**: MEDIUM to HIGH
 
-### 6. Pointer Safety Detection (NEW!)
-- **Null Pointer Dereference**: Detects when NULL pointers are dereferenced without checks
-- **Uninitialized Pointers**: Finds pointers used before initialization
-- **Pointer State Tracking**: Monitors pointer lifecycle (NULL, VALID, FREED, UNINITIALIZED)
-- **Pointer Arithmetic**: Warns about potentially dangerous pointer arithmetic
+### 6. Pointer Safety Detection
+Implements stateful analysis for pointer-related vulnerabilities:
+- **Null Dereference Detection**: Identifies unchecked NULL pointer usage
+- **Uninitialized Pointer Detection**: Tracks pointer initialization state
+- **State Machine Analysis**: Monitors pointer lifecycle (NULL, VALID, FREED, UNINITIALIZED)
+- **Pointer Arithmetic Validation**: Identifies potentially unsafe pointer operations
 - **Severity**: HIGH to CRITICAL
-- Detects overflow in memory allocation size calculations
-- **Severity**: MEDIUM to HIGH
 
 ## 🏗️ Architecture
 
 ```
 SafeC/
-├── include/              # Header files
-│   ├── lexer.h          # Tokenization
+├── include/              # Public API headers
+│   ├── lexer.h          # Tokenization engine
 │   ├── parser.h         # Syntax analysis
-│   ├── ast.h            # Abstract Syntax Tree
-│   └── detectors/       # Vulnerability detectors
+│   ├── ast.h            # AST node definitions
+│   ├── directory_scanner.h  # Recursive file discovery
+│   └── detectors/       # Detector interfaces
 ├── src/                 # Implementation
 │   ├── lexer.cpp
 │   ├── parser.cpp
 │   ├── ast.cpp
 │   ├── main.cpp
+│   ├── report_generator.cpp  # Multi-format output
 │   └── detectors/       # Detector implementations
-├── test_samples/        # Vulnerable code examples
-└── docs/                # Documentation
-
+├── config/              # Detection rule configuration
+├── test_samples/        # Vulnerability test cases
+└── docs/                # Technical documentation
 ```
 
-### Core Components
+### Component Architecture
 
-**Lexer** (`lexer.cpp`)
-- Implements finite state machine for pattern recognition
-- Handles comments, strings, and complex operators
-- Provides token stream for parser
+**Lexical Analyzer** (`lexer.cpp`)
+- Finite state machine implementation for token recognition
+- Comprehensive operator and keyword handling
+- Comment and string literal processing
 
-**Parser** (`parser.cpp`)
+**Syntax Analyzer** (`parser.cpp`)
 - Recursive descent parser for C/C++ subset
-- Builds Abstract Syntax Tree (AST)
-- Error recovery and reporting
+- AST construction with error recovery
+- Pointer type declaration support
 
-**AST** (`ast.h`, `ast.cpp`)
-- Complete node hierarchy for expressions, statements, declarations
-- Visitor pattern for traversal
-- Symbol table for scope management
+**Abstract Syntax Tree** (`ast.h`, `ast.cpp`)
+- Complete node hierarchy for expressions, statements, and declarations
+- Visitor pattern implementation for traversal
+- Symbol table management for scope tracking
 
-**Detectors** (`src/detectors/`)
-- Base class with common vulnerability reporting interface
-- Each detector implements AST visitor pattern
-- Configurable severity levels and remediation recommendations
+**Detection Modules** (`src/detectors/`)
+- Unified base class interface
+- AST visitor pattern implementation
+- Configurable severity and remediation systems
 
-## 🚀 Building and Usage
+## 🚀 Build and Deployment
 
-### Prerequisites
-- C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
+### System Requirements
+- C++17-compliant compiler (GCC 7+, Clang 5+, MSVC 2017+)
 - CMake 3.15 or higher
-- Git (for cloning)
+- Git version control system
 
-### Build Instructions
+### Build Process
 
 ```bash
-# Clone the repository
+# Repository acquisition
 git clone https://github.com/yourusername/SafeC.git
 cd SafeC
 
-# Create build directory
+# Build configuration
 mkdir build && cd build
-
-# Configure and build
 cmake ..
-make -j4
+make -j$(nproc)
 
-# Run SafeC
-./safec ../test_samples/buffer_overflow_examples.c
+# Execution
+./safec ../test_samples/working/buffer_test.c
 ```
 
-### Usage Examples
+### Usage Patterns
 
-**Basic Analysis:**
+**Single File Analysis:**
 ```bash
-./safec vulnerable_code.c
+./safec source_file.c
 ```
 
-**Generate JSON Report:**
+**Project-Wide Analysis:**
 ```bash
-./safec -o report.json vulnerable_code.c
+./safec -d /path/to/project
 ```
 
-**Help:**
+**JSON Report Generation:**
+```bash
+./safec -o report.json source_file.c
+```
+
+**HTML Report Generation:**
+```bash
+./safec --html report.html source_file.c
+```
+
+**Directory Scan with HTML Output:**
+```bash
+./safec -d --html project_report.html /path/to/project
+```
+
+**Command Reference:**
 ```bash
 ./safec --help
 ```
 
-### Example Output
+### Sample Output
 
 ```
 ================================================================================
 SafeC Static Analysis Report
-File: buffer_overflow_examples.c
+File: buffer_test.c
 ================================================================================
 
-Found 3 potential vulnerabilities:
+Found 2 potential vulnerabilities:
 
 [1] Buffer Overflow - HIGH
-    Location: Line 9, Column 5
+    Location: Line 10, Column 5
     Description: Use of unsafe function 'strcpy' which does not perform bounds checking
     Recommendation: Use strncpy() instead and ensure proper null termination
 
 [2] Buffer Overflow - CRITICAL
-    Location: Line 22, Column 5
+    Location: Line 17, Column 9
     Description: Array 'arr' accessed with out-of-bounds index 10 (array size: 5)
     Recommendation: Ensure array indices are within bounds [0, 4]
 
 --------------------------------------------------------------------------------
 Summary:
   CRITICAL: 1
-  HIGH:     2
+  HIGH:     1
 ================================================================================
 ```
 
 ## 📊 Research Context
 
-### Motivation
+### Theoretical Foundation
 
-Static analysis is a fundamental technique in cybersecurity for identifying vulnerabilities before code execution. This project demonstrates:
+SafeC demonstrates practical application of static analysis theory through complete implementation of the analysis pipeline. The project showcases:
 
-1. **Understanding of Program Analysis Theory**: Implementation of lexical analysis, parsing, and semantic analysis from first principles
-2. **Practical Security Knowledge**: Focus on real-world vulnerability classes (CWE Top 25)
-3. **Software Engineering Skills**: Clean architecture, modular design, comprehensive documentation
+1. **Program Analysis Theory**: Lexical analysis, syntax analysis, and semantic analysis implementation
+2. **Security Engineering**: Focus on CWE Top 25 vulnerability classes
+3. **Software Architecture**: Modular design with extensibility and maintainability
 
-### Related Work
+### Comparative Analysis
 
-SafeC builds upon established static analysis techniques while providing an educational implementation:
+**Industrial Tools:**
+- **Clang Static Analyzer**: Production-grade analysis using LLVM infrastructure
+- **Coverity**: Commercial platform with extensive language support
+- **Infer**: Advanced analyzer utilizing separation logic
 
-- **Clang Static Analyzer**: Industrial-strength analyzer using LLVM infrastructure
-- **Cppcheck**: Lightweight static analyzer with focus on low false positives
-- **Coverity**: Commercial tool with advanced dataflow analysis
-- **Infer**: Facebook's static analyzer using separation logic
+**Academic Tools:**
+- **FlawFinder**: Pattern-matching vulnerability scanner
+- **RATS**: Rough Auditing Tool for Security
+- **Splint**: Annotation-assisted static checker
 
-### Novel Contributions
+**SafeC Positioning:**
+SafeC occupies the intersection of academic clarity and practical effectiveness, providing AST-based analysis with educational transparency while maintaining detection accuracy.
 
-While SafeC is educational in scope, it demonstrates:
-- Clean separation of concerns between lexing, parsing, and analysis
-- Extensible detector architecture using visitor pattern
-- Research-quality documentation and code organization
-- Practical examples of common vulnerability patterns
+### Technical Contributions
 
-### Limitations and Future Work
+1. **CSV Configuration System**: Runtime-modifiable detection rules (115+ patterns)
+2. **Stateful Pointer Analysis**: Lifecycle tracking beyond pattern matching
+3. **Modular Detector Architecture**: Extensible visitor pattern implementation
+4. **Multi-Format Reporting**: Console, JSON, and HTML output generation
+5. **Directory Scanning**: Recursive project analysis capabilities
 
-**Current Limitations:**
-- Simplified C/C++ grammar (subset of full language)
-- Basic dataflow analysis (no inter-procedural analysis)
-- Limited path sensitivity in control flow analysis
+### Scope and Limitations
 
-**Future Enhancements:**
-- Extend grammar support for full C/C++ compliance
-- Implement inter-procedural analysis
-- Add taint analysis for tracking user input
-- Machine learning-based false positive reduction
-- Integration with CI/CD pipelines
+**Current Implementation:**
+- C/C++ subset grammar (core constructs for vulnerability detection)
+- Intra-procedural analysis (function-level scope)
+- Conservative analysis approach (may produce false positives)
+
+**Design Rationale:**
+The simplified grammar focuses on security-critical constructs while maintaining code clarity. Full C++ compliance would introduce significant complexity without proportional detection improvement for the target vulnerability classes.
+
+### Future Research Directions
+
+1. **Parser Enhancement**: Integration of parser generators for extended language support
+2. **Inter-Procedural Analysis**: Cross-function dataflow tracking
+3. **Path Sensitivity**: SMT solver integration for precise path analysis
+4. **Taint Analysis**: User input tracking through program execution
+5. **Tool Integration**: IDE plugins and CI/CD pipeline support
+6. **Machine Learning**: False positive reduction through ML models
 
 ## 🎓 Academic Applications
 
-This project is designed to demonstrate research capabilities for graduate school applications in cybersecurity. It showcases:
+This project demonstrates research competency across multiple dimensions:
 
-✅ **Technical Depth**: Understanding of compiler theory and program analysis  
-✅ **Security Focus**: Knowledge of common vulnerability classes and detection techniques  
-✅ **Research Methodology**: Systematic approach to problem-solving  
-✅ **Documentation**: Clear communication of technical concepts  
-✅ **Practical Skills**: Applicable to bug bounty hunting and security auditing
+✅ **Technical Implementation**: Complete static analyzer from first principles  
+✅ **Security Expertise**: CWE vulnerability class coverage  
+✅ **Research Methodology**: Systematic approach with honest evaluation  
+✅ **Documentation Quality**: Comprehensive technical communication  
+✅ **Practical Application**: Production-applicable vulnerability detection
 
 ## 📚 References
 
-1. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.)
-2. Chess, B., & West, J. (2007). *Secure Programming with Static Analysis*
-3. MITRE. (2023). *CWE Top 25 Most Dangerous Software Weaknesses*
-4. Bessey, A., et al. (2010). "A few billion lines of code later: using static analysis to find bugs in the real world." *CACM*
+1. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.). Addison-Wesley.
+
+2. Chess, B., & West, J. (2007). *Secure Programming with Static Analysis*. Addison-Wesley Professional.
+
+3. MITRE Corporation. (2023). *CWE Top 25 Most Dangerous Software Weaknesses*. https://cwe.mitre.org/top25/
+
+4. Nielson, F., Nielson, H. R., & Hankin, C. (2015). *Principles of Program Analysis*. Springer.
+
+5. Bessey, A., et al. (2010). "A few billion lines of code later: using static analysis to find bugs in the real world." *Communications of the ACM*, 53(2), 66-75.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See LICENSE file for complete terms.
 
 ## 👤 Author
 
 **Ronak Parmar**  
-Software Engineer | Cybersecurity Researcher  
-2.5+ years experience in C/C++ and systems engineering
+Senior Software Engineer | Cybersecurity Researcher  
+2.5+ years experience in C/C++ systems engineering and security analysis
 
 ---
 
-**Note**: This is a research and educational project. For production use, consider industrial-strength tools like Clang Static Analyzer, Coverity, or PVS-Studio.
-
+**Note**: SafeC is designed for research and educational purposes. Production environments should utilize industrial-grade tools such as Clang Static Analyzer, Coverity, or PVS-Studio.
