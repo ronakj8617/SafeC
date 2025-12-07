@@ -177,6 +177,12 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
     decl->line = typeToken.line;
     decl->column = typeToken.column;
 
+    // Check for pointer type (e.g., int*)
+    if (check(TokenType::STAR)) {
+        advance();
+        decl->type += "*";  // Append * to type
+    }
+
     if (!check(TokenType::IDENTIFIER)) {
         error("Expected variable name");
         return nullptr;

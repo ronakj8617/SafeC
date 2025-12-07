@@ -27,6 +27,7 @@ set(SAFEC_SOURCES
     src/detectors/memory_leak_detector.cpp
     src/detectors/format_string_detector.cpp
     src/detectors/integer_overflow_detector.cpp
+    src/detectors/pointer_safety_detector.cpp
 )
 
 # Main executable

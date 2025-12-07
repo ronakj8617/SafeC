@@ -1,8 +1,52 @@
 # Buffer Overflow - Unsafe Functions Configuration
 # Format: function_name,severity,safe_alternative,description
-strcpy,HIGH,strncpy,Copies string without bounds checking
-strcat,HIGH,strncat,Concatenates strings without bounds checking
+
+# String manipulation functions
+strcpy,CRITICAL,strncpy,Copies string without bounds checking
+strcat,CRITICAL,strncat,Concatenates strings without bounds checking
 sprintf,HIGH,snprintf,Formats string without size limit
-gets,CRITICAL,fgets,Reads input without size limit
-scanf,MEDIUM,Use width specifiers,Can overflow without format width limits
 vsprintf,HIGH,vsnprintf,Variable argument sprintf without bounds
+gets,CRITICAL,fgets,Reads input without size limit - removed in C11
+scanf,MEDIUM,Use width specifiers,Can overflow without format width limits
+fscanf,MEDIUM,Use width specifiers,Can overflow without format width limits
+sscanf,MEDIUM,Use width specifiers,Can overflow without format width limits
+vscanf,MEDIUM,Use width specifiers,Variable argument scanf
+vfscanf,MEDIUM,Use width specifiers,Variable argument fscanf
+vsscanf,MEDIUM,Use width specifiers,Variable argument sscanf
+
+# Wide character string functions
+wcscpy,CRITICAL,wcsncpy,Wide char strcpy without bounds
+wcscat,CRITICAL,wcsncat,Wide char strcat without bounds
+swprintf,HIGH,Use size parameter,Wide char sprintf
+vswprintf,HIGH,Use size parameter,Wide char vsprintf
+wscanf,MEDIUM,Use width specifiers,Wide char scanf
+fwscanf,MEDIUM,Use width specifiers,Wide char fscanf
+swscanf,MEDIUM,Use width specifiers,Wide char sscanf
+
+# Memory functions
+memcpy,HIGH,Use with size checks,No overlap checking - use memmove
+memmove,MEDIUM,Verify buffer sizes,Safer than memcpy but still needs size checks
+bcopy,HIGH,Use memmove,Deprecated - no bounds checking
+bzero,LOW,Use memset,Deprecated function
+
+# Additional string functions
+strncpy,MEDIUM,Check null termination,May not null-terminate
+strncat,MEDIUM,Verify total size,Easy to misuse buffer size
+stpcpy,HIGH,stpncpy,String copy returning pointer to end
+stpncpy,MEDIUM,Check null termination,May not null-terminate
+realpath,MEDIUM,Use with PATH_MAX,Can overflow if buffer too small
+
+# Input functions
+getwd,HIGH,getcwd,Deprecated - no size parameter
+getpass,MEDIUM,Use getline,Deprecated - fixed buffer size
+cuserid,MEDIUM,getlogin_r,Deprecated - fixed buffer size
+
+# Conversion functions
+atoi,LOW,strtol with error checking,No error detection
+atol,LOW,strtol with error checking,No error detection
+atoll,LOW,strtoll with error checking,No error detection
+
+# Temporary file functions
+tmpnam,MEDIUM,mkstemp,Race condition vulnerability
+tempnam,MEDIUM,mkstemp,Race condition vulnerability
+mktemp,HIGH,mkstemp,Race condition and predictable names
