@@ -8,7 +8,8 @@ A research-oriented static analysis tool designed to detect common security vuln
 
 ## 🎯 Project Overview
 
-SafeC is a static analyzer built from the ground up to showcase understanding## ✨ Key Features
+SafeC is a static analyzer built from the ground up to showcase understanding
+## ✨ Key Features
 
 ### Advanced Analysis Capabilities
 - **Custom Lexer & Parser**: Built from scratch to demonstrate compiler construction principles

@@ -22,6 +22,7 @@ set(SAFEC_SOURCES
     src/utils.cpp
     src/report_generator.cpp
     src/config_loader.cpp
+    src/directory_scanner.cpp
     src/detectors/buffer_overflow_detector.cpp
     src/detectors/use_after_free_detector.cpp
     src/detectors/memory_leak_detector.cpp

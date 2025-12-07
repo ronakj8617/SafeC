@@ -15,6 +15,9 @@ class Utils {
     // Check if file exists
     static bool fileExists(const std::string& filename);
 
+    // Check if path is a directory
+    static bool isDirectory(const std::string& path);
+
     // Get file extension
     static std::string getFileExtension(const std::string& filename);
 };
