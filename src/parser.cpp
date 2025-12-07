@@ -9,27 +9,44 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens_(tokens), current_(0) 
 std::unique_ptr<Program> Parser::parse() {
     auto program = std::make_unique<Program>();
 
+    std::cout << "Starting parsing..." << std::endl;
+    int functionCount = 0;
+
     while (!isAtEnd()) {
         try {
+            Token currentToken = peek();
+            std::cout << "Processing token at line " << currentToken.line << ", column "
+                      << currentToken.column << ": " << currentToken.value << std::endl;
+
             // Try to parse function declaration
             if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_VOID) ||
                 check(TokenType::KEYWORD_CHAR)) {
+                std::cout << "  Attempting to parse function declaration..." << std::endl;
                 auto func = parseFunctionDeclaration();
                 if (func) {
+                    functionCount++;
+                    std::cout << "  Successfully parsed function: " << func->name << std::endl;
                     program->functions.push_back(std::move(func));
+                } else {
+                    std::cout << "  Function parsing returned nullptr" << std::endl;
                 }
             } else {
                 // Skip unknown tokens
+                std::cout << "  Skipping unknown token" << std::endl;
                 advance();
             }
         } catch (const std::exception& e) {
             error(std::string("Exception during parsing: ") + e.what());
+            std::cerr << "Exception caught: " << e.what() << std::endl;
             synchronize();
         } catch (...) {
             error("Unknown exception during parsing");
+            std::cerr << "Unknown exception caught" << std::endl;
             synchronize();
         }
     }
+
+    std::cout << "Parsing completed. Found " << functionCount << " function(s)." << std::endl;
 
     // Print errors if any
     if (!errors_.empty()) {
@@ -459,17 +476,24 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
 
 // Helper methods
 Token Parser::peek() {
-    if (isAtEnd()) {
+    if (tokens_.empty()) {
+        // Return a dummy EOF token if no tokens
+        return Token{TokenType::END_OF_FILE, "", 0, 0};
+    }
+    if (current_ >= tokens_.size()) {
         return tokens_.back();
     }
     return tokens_[current_];
 }
 
 Token Parser::previous() {
-    if (current_ > 0) {
+    if (current_ > 0 && current_ <= tokens_.size()) {
         return tokens_[current_ - 1];
     }
-    return tokens_[0];
+    if (!tokens_.empty()) {
+        return tokens_[0];
+    }
+    return Token{TokenType::END_OF_FILE, "", 0, 0};
 }
 
 Token Parser::advance() {
@@ -512,7 +536,14 @@ void Parser::consume(TokenType type, const std::string& message) {
 }
 
 bool Parser::isAtEnd() {
-    return current_ >= tokens_.size() || peek().type == TokenType::END_OF_FILE;
+    if (tokens_.empty()) {
+        return true;
+    }
+    if (current_ >= tokens_.size()) {
+        return true;
+    }
+    // Check if current token is EOF without calling peek() (avoid circular dependency)
+    return tokens_[current_].type == TokenType::END_OF_FILE;
 }
 
 void Parser::error(const std::string& message) {

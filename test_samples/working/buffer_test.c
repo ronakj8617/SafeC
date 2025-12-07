@@ -1,6 +1,7 @@
 // Simplified buffer overflow test - no includes
 // This version works with our simplified parser
 
+#include <string.h>
 void unsafe_copy() {
     char buffer[10];
     char input[100];
