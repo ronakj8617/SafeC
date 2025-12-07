@@ -1,11 +1,31 @@
 #include "detectors/buffer_overflow_detector.h"
 
+#include <iostream>
+
+#include "config_loader.h"
+
 namespace safec {
 
-const std::unordered_set<std::string> BufferOverflowDetector::unsafeFunctions_ = {
-    "strcpy", "strcat", "sprintf", "gets", "scanf", "vsprintf"};
+// Initialize with config file or defaults
+std::unordered_set<std::string> BufferOverflowDetector::unsafeFunctions_ = {};
+
+void BufferOverflowDetector::loadConfig(const std::string& configPath) {
+    std::vector<UnsafeFunctionInfo> functions;
+    if (ConfigLoader::loadUnsafeFunctions(configPath, functions)) {
+        unsafeFunctions_ = ConfigLoader::getUnsafeFunctionNames(functions);
+        std::cout << "Loaded " << unsafeFunctions_.size() << " unsafe functions from config\n";
+    } else {
+        // Fallback to defaults
+        unsafeFunctions_ = {"strcpy", "strcat", "sprintf", "gets", "scanf", "vsprintf"};
+        std::cout << "Using default unsafe functions list\n";
+    }
+}
 
 void BufferOverflowDetector::analyze(Program& program) {
+    // Load config if not already loaded
+    if (unsafeFunctions_.empty()) {
+        loadConfig("config/unsafe_functions.csv");
+    }
     vulnerabilities_.clear();
     arraySizes_.clear();
     program.accept(*this);

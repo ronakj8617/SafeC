@@ -1,0 +1,8 @@
+# Buffer Overflow - Unsafe Functions Configuration
+# Format: function_name,severity,safe_alternative,description
+strcpy,HIGH,strncpy,Copies string without bounds checking
+strcat,HIGH,strncat,Concatenates strings without bounds checking
+sprintf,HIGH,snprintf,Formats string without size limit
+gets,CRITICAL,fgets,Reads input without size limit
+scanf,MEDIUM,Use width specifiers,Can overflow without format width limits
+vsprintf,HIGH,vsnprintf,Variable argument sprintf without bounds

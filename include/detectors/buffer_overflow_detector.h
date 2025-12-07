@@ -13,6 +13,9 @@ class BufferOverflowDetector : public DetectorBase {
         return "Buffer Overflow Detector";
     }
 
+    // Load configuration from file
+    static void loadConfig(const std::string& configPath);
+
     // Visitor methods
     void visit(BinaryExpression& node) override;
     void visit(UnaryExpression& node) override;
@@ -34,8 +37,8 @@ class BufferOverflowDetector : public DetectorBase {
     void visit(Program& node) override;
 
    private:
-    // Unsafe functions that can cause buffer overflows
-    static const std::unordered_set<std::string> unsafeFunctions_;
+    // Unsafe functions that can cause buffer overflows (loaded from config)
+    static std::unordered_set<std::string> unsafeFunctions_;
 
     // Track array sizes
     std::map<std::string, int> arraySizes_;
