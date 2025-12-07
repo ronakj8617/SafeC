@@ -8,22 +8,42 @@ A research-oriented static analysis tool designed to detect common security vuln
 
 ## 🎯 Project Overview
 
-SafeC is a static analyzer built from the ground up to showcase understanding of:
-- **Lexical Analysis**: Custom tokenizer for C/C++ source code
-- **Syntax Analysis**: Recursive descent parser with AST construction
-- **Semantic Analysis**: Multiple vulnerability detection algorithms
-- **Program Analysis**: Dataflow analysis, control flow tracking, and symbolic execution techniques
+SafeC is a static analyzer built from the ground up to showcase understanding## ✨ Key Features
+
+### Advanced Analysis Capabilities
+- **Custom Lexer & Parser**: Built from scratch to demonstrate compiler construction principles
+- **Abstract Syntax Tree (AST)**: Complete node hierarchy with visitor pattern implementation
+- **Six Vulnerability Detectors**: Comprehensive coverage of CWE Top 25 vulnerability classes
+- **Pointer Type Support**: Parser handles pointer declarations (`int*`, `char*`, etc.)
+- **Dataflow Analysis**: Tracks variable states and memory through program execution
+- **Control Flow Analysis**: Monitors execution paths and conditional branches
+
+### CSV-Based Configuration System
+- **115+ Configurable Detection Rules**: Extensive vulnerability pattern database
+- **No Recompilation Required**: Modify detection rules on-the-fly
+- **Project-Specific Customization**: Add custom unsafe functions for your codebase
+- **Three Configuration Files**:
+  - `config/unsafe_functions.csv` - 36+ buffer overflow patterns
+  - `config/format_functions.csv` - 29+ format string vulnerabilities
+  - `config/memory_functions.csv` - 28+ memory management functions
+
+### Professional Output
+- **Console Reports**: Color-coded severity levels with detailed recommendations
+- **JSON Export**: Machine-readable output for CI/CD integration
+- **Line-Precise Locations**: Exact file, line, and column information for each finding
+- **Severity Classification**: CRITICAL, HIGH, MEDIUM, LOW severity levels with 115+ configurable patterns
 
 This project was developed to demonstrate research capabilities in cybersecurity, specifically in the areas of program analysis and vulnerability detection.
 
 ## 🔍 Detected Vulnerability Classes
 
-SafeC implements five critical vulnerability detectors:
+SafeC implements **six critical vulnerability detectors**:
 
 ### 1. Buffer Overflow Detection
-- Identifies unsafe functions (`strcpy`, `strcat`, `sprintf`, `gets`)
+- Identifies unsafe functions (`strcpy`, `strcat`, `sprintf`, `gets`, and 36+ more)
 - Analyzes array bounds in indexing operations
 - Tracks buffer sizes through dataflow analysis
+- **CSV Configurable**: 36+ unsafe functions in `config/unsafe_functions.csv`
 - **Severity**: HIGH to CRITICAL
 
 ### 2. Use-After-Free Detection
@@ -37,17 +57,28 @@ SafeC implements five critical vulnerability detectors:
 - Identifies allocated memory without corresponding deallocation
 - Tracks memory through function calls and returns
 - Detects leaks in error handling paths
+- **CSV Configurable**: 28+ memory management functions in `config/memory_functions.csv`
 - **Severity**: MEDIUM
 
 ### 4. Format String Vulnerabilities
 - Detects user-controlled format strings in `printf` family functions
 - Validates format specifier count vs. argument count
 - Identifies dangerous `%n` specifiers
+- **CSV Configurable**: 29+ format functions in `config/format_functions.csv`
 - **Severity**: HIGH to CRITICAL
 
 ### 5. Integer Overflow Detection
 - Analyzes arithmetic operations for potential overflows
 - Checks array index calculations
+- Detects overflow in memory allocation size calculations
+- **Severity**: MEDIUM to HIGH
+
+### 6. Pointer Safety Detection (NEW!)
+- **Null Pointer Dereference**: Detects when NULL pointers are dereferenced without checks
+- **Uninitialized Pointers**: Finds pointers used before initialization
+- **Pointer State Tracking**: Monitors pointer lifecycle (NULL, VALID, FREED, UNINITIALIZED)
+- **Pointer Arithmetic**: Warns about potentially dangerous pointer arithmetic
+- **Severity**: HIGH to CRITICAL
 - Detects overflow in memory allocation size calculations
 - **Severity**: MEDIUM to HIGH
 
