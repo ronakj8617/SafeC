@@ -10,7 +10,8 @@ This project explores:
 
 1. **How can custom static analysis tools detect common vulnerability patterns in C/C++ code?**
 2. **What are the trade-offs between parser complexity and practical vulnerability detection?**
-3. **How can configuration-based detection rules improve tool extensibility?**
+3. **How can configuration-based detection rules improve tool extensibility and usability?**
+4. **What pointer safety issues can be detected through state tracking and dataflow analysis?**
 
 ## Motivation
 
@@ -22,33 +23,53 @@ This project explores:
 
 ### Technical Motivation
 Rather than using existing frameworks like Clang/LLVM, SafeC implements the entire analysis pipeline from scratch to demonstrate:
-- Understanding of compiler theory (lexing, parsing, AST construction)
+- Understanding of compiler theory (lexing, parsing, AST construction, pointer types)
 - Knowledge of program analysis techniques (dataflow, control flow, symbolic execution)
 - Practical security knowledge (CWE Top 25 vulnerability classes)
-- Software engineering skills (design patterns, clean architecture)
+- Software engineering skills (design patterns, clean architecture, extensibility)
 
 ## Novel Contributions
 
 ### 1. CSV-Based Configuration System
-Unlike traditional static analyzers with hardcoded rules, SafeC introduces a **CSV configuration system** that allows users to:
+Unlike traditional static analyzers with hardcoded rules, SafeC introduces a **CSV configuration system** with **115+ detection rules** that allows users to:
 - Customize detection rules without recompilation
-- Add project-specific unsafe functions
+- Add project-specific unsafe functions (36+ buffer overflow patterns)
+- Configure format string vulnerable functions (29+ patterns)
+- Define memory management functions (28+ patterns)
 - Adjust severity levels dynamically
 - Share configurations across teams
 
-### 2. Educational Parser Design
-The parser implements a **simplified C grammar** that:
+**Example Configuration:**
+```csv
+# config/unsafe_functions.csv
+strcpy,CRITICAL,strncpy,Copies string without bounds checking
+gets,CRITICAL,fgets,Reads input without size limit
+memcpy,HIGH,Use with size checks,No overlap checking
+```
+
+### 2. Comprehensive Pointer Safety Analysis (NEW!)
+SafeC implements sophisticated **pointer state tracking** that detects:
+- **Null pointer dereferences** - Identifies when NULL pointers are used without checks
+- **Uninitialized pointers** - Finds pointers used before initialization
+- **Pointer lifecycle tracking** - Monitors states: NULL, VALID, FREED, UNINITIALIZED
+- **Dangerous pointer arithmetic** - Warns about out-of-bounds pointer operations
+
+This goes beyond simple pattern matching to provide **stateful analysis**### 3. Educational Parser with Pointer Support
+The parser implements a **C grammar subset** that:
 - Handles core language constructs needed for vulnerability detection
+- **Supports pointer type declarations** (`int*`, `char*`, `void*`)
 - Demonstrates parser design principles without overwhelming complexity
 - Provides clear examples for learning compiler construction
-- Documents limitations honestly (preprocessor directives, complex types)
+- Documents limitations honestly (preprocessor directives, complex templates)
+- Successfully parses real C code for security analysis
 
-### 3. Modular Detector Architecture
-Each vulnerability detector is:
+### 4. Modular Detector Architecture
+Each of the **six vulnerability detectors** is:
 - Self-contained with clear responsibilities
 - Extensible through visitor pattern
 - Independently testable
 - Well-documented with examples
+- Configurable via CSV files (where applicable)
 
 ## Related Work
 
