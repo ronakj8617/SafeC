@@ -19,11 +19,23 @@ std::unique_ptr<Program> Parser::parse() {
                     program->functions.push_back(std::move(func));
                 }
             } else {
+                // Skip unknown tokens
                 advance();
             }
         } catch (const std::exception& e) {
-            error(e.what());
+            error(std::string("Exception during parsing: ") + e.what());
             synchronize();
+        } catch (...) {
+            error("Unknown exception during parsing");
+            synchronize();
+        }
+    }
+
+    // Print errors if any
+    if (!errors_.empty()) {
+        std::cerr << "Parsing completed with " << errors_.size() << " error(s):" << std::endl;
+        for (const auto& err : errors_) {
+            std::cerr << "  " << err << std::endl;
         }
     }
 
@@ -34,6 +46,11 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
     auto func = std::make_unique<FunctionDeclaration>();
 
     // Return type
+    if (isAtEnd()) {
+        error("Unexpected end of file");
+        return nullptr;
+    }
+
     Token returnType = advance();
     func->returnType = returnType.value;
     func->line = returnType.line;
@@ -47,7 +64,10 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
     func->name = advance().value;
 
     // Parameters
-    consume(TokenType::LPAREN, "Expected '(' after function name");
+    if (!match(TokenType::LPAREN)) {
+        error("Expected '(' after function name");
+        return nullptr;
+    }
 
     while (!check(TokenType::RPAREN) && !isAtEnd()) {
         if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_CHAR) ||
@@ -67,13 +87,20 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
         }
     }
 
-    consume(TokenType::RPAREN, "Expected ')' after parameters");
+    if (!match(TokenType::RPAREN)) {
+        error("Expected ')' after parameters");
+        return nullptr;
+    }
 
-    // Function body
+    // Function body or semicolon
     if (check(TokenType::LBRACE)) {
         func->body = parseBlockStatement();
+    } else if (match(TokenType::SEMICOLON)) {
+        // Function declaration without body
+        func->body = nullptr;
     } else {
-        consume(TokenType::SEMICOLON, "Expected ';' or '{' after function declaration");
+        error("Expected ';' or '{' after function declaration");
+        return nullptr;
     }
 
     return func;
