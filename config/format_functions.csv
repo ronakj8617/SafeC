@@ -1,5 +1,7 @@
 # Format String - Vulnerable Functions Configuration
 # Format: function_name,severity,description
+
+# Standard printf family
 printf,HIGH,Can be exploited with user-controlled format strings
 fprintf,HIGH,Can be exploited with user-controlled format strings
 sprintf,HIGH,Can be exploited with user-controlled format strings
@@ -8,3 +10,34 @@ vprintf,HIGH,Variable argument version of printf
 vfprintf,HIGH,Variable argument version of fprintf
 vsprintf,HIGH,Variable argument version of sprintf
 vsnprintf,MEDIUM,Variable argument version of snprintf
+dprintf,HIGH,File descriptor printf - format string vulnerable
+vdprintf,HIGH,Variable argument dprintf
+
+# Wide character printf family
+wprintf,HIGH,Wide character printf
+fwprintf,HIGH,Wide character fprintf
+swprintf,MEDIUM,Wide character sprintf
+vwprintf,HIGH,Variable argument wprintf
+vfwprintf,HIGH,Variable argument fwprintf
+vswprintf,MEDIUM,Variable argument swprintf
+
+# Syslog functions
+syslog,HIGH,Format string vulnerability in logging
+vsyslog,HIGH,Variable argument syslog
+
+# Error reporting functions
+err,HIGH,BSD error function with format string
+verr,HIGH,Variable argument err
+errx,HIGH,BSD error function with format string
+verrx,HIGH,Variable argument errx
+warn,HIGH,BSD warning function with format string
+vwarn,HIGH,Variable argument warn
+warnx,HIGH,BSD warning function with format string
+vwarnx,HIGH,Variable argument warnx
+
+# String formatting
+asprintf,MEDIUM,Allocating sprintf - still format vulnerable
+vasprintf,MEDIUM,Variable argument asprintf
+
+# Obsolete functions
+_doprnt,CRITICAL,Obsolete internal printf - highly dangerous

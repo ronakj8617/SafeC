@@ -6,6 +6,7 @@
 #include "detectors/format_string_detector.h"
 #include "detectors/integer_overflow_detector.h"
 #include "detectors/memory_leak_detector.h"
+#include "detectors/pointer_safety_detector.h"
 #include "detectors/use_after_free_detector.h"
 #include "lexer.h"
 #include "parser.h"
@@ -112,6 +113,7 @@ int main(int argc, char* argv[]) {
     detectors.push_back(std::make_unique<MemoryLeakDetector>());
     detectors.push_back(std::make_unique<FormatStringDetector>());
     detectors.push_back(std::make_unique<IntegerOverflowDetector>());
+    detectors.push_back(std::make_unique<PointerSafetyDetector>());
 
     std::vector<Vulnerability> allVulnerabilities;
 

@@ -1,8 +1,44 @@
 # Memory Management Functions Configuration
 # Format: function_name,type,description
+
+# C allocation functions
 malloc,ALLOC,Allocates memory on heap
 calloc,ALLOC,Allocates and zeros memory on heap
 realloc,ALLOC,Reallocates memory block
 free,FREE,Deallocates memory
+alloca,ALLOC,Stack allocation - automatically freed
+
+# C++ allocation
 new,ALLOC,C++ memory allocation
 delete,FREE,C++ memory deallocation
+new[],ALLOC,C++ array allocation
+delete[],FREE,C++ array deallocation
+
+# POSIX memory functions
+posix_memalign,ALLOC,Allocates aligned memory
+aligned_alloc,ALLOC,C11 aligned allocation
+memalign,ALLOC,Obsolete aligned allocation
+valloc,ALLOC,Page-aligned allocation
+pvalloc,ALLOC,Page-aligned allocation with padding
+
+# String duplication (allocates memory)
+strdup,ALLOC,Duplicates string - allocates memory
+strndup,ALLOC,Duplicates n characters - allocates memory
+wcsdup,ALLOC,Wide character strdup
+
+# Memory mapping
+mmap,ALLOC,Maps files or devices into memory
+munmap,FREE,Unmaps memory region
+mremap,ALLOC,Remaps memory region
+
+# Shared memory
+shmget,ALLOC,Allocates shared memory segment
+shmat,ALLOC,Attaches shared memory
+shmdt,FREE,Detaches shared memory
+shmctl,FREE,Controls shared memory (with IPC_RMID)
+
+# Other allocation functions
+brk,ALLOC,Changes data segment size
+sbrk,ALLOC,Changes data segment size incrementally
+reallocarray,ALLOC,Reallocates array with overflow checking
+recallocarray,ALLOC,Reallocates and clears array
