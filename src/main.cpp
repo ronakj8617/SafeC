@@ -22,13 +22,15 @@ void printUsage(const char* programName) {
     std::cout << "Options:\n";
     std::cout << "  -h, --help          Show this help message\n";
     std::cout << "  -o, --output FILE   Write JSON report to FILE\n";
+    std::cout << "  --html FILE         Write HTML report to FILE\n";
     std::cout << "  -v, --version       Show version information\n";
     std::cout << "  -d, --directory     Scan directory recursively for C/C++ files\n\n";
     std::cout << "Examples:\n";
     std::cout << "  " << programName << " vulnerable_code.c\n";
     std::cout << "  " << programName << " -o report.json vulnerable_code.c\n";
+    std::cout << "  " << programName << " --html report.html vulnerable_code.c\n";
     std::cout << "  " << programName << " -d /path/to/project\n";
-    std::cout << "  " << programName << " -d -o report.json /path/to/project\n";
+    std::cout << "  " << programName << " -d --html report.html /path/to/project\n";
 }
 
 void printVersion() {
@@ -65,6 +67,7 @@ int main(int argc, char* argv[]) {
 
     std::string inputPath;
     std::string outputFile;
+    std::string htmlFile;
     bool scanDirectory = false;
 
     // Parse command-line arguments
@@ -82,6 +85,13 @@ int main(int argc, char* argv[]) {
                 outputFile = argv[++i];
             } else {
                 std::cerr << "Error: -o requires an output filename\n";
+                return 1;
+            }
+        } else if (arg == "--html") {
+            if (i + 1 < argc) {
+                htmlFile = argv[++i];
+            } else {
+                std::cerr << "Error: --html requires an output filename\n";
                 return 1;
             }
         } else if (arg == "-d" || arg == "--directory") {
@@ -178,7 +188,10 @@ int main(int argc, char* argv[]) {
 
     if (!outputFile.empty()) {
         ReportGenerator::generateJSONReport(allVulnerabilities, inputPath, outputFile);
-        std::cout << "\nJSON report written to: " << outputFile << "\n";
+    }
+
+    if (!htmlFile.empty()) {
+        ReportGenerator::generateHTMLReport(allVulnerabilities, inputPath, htmlFile);
     }
 
     // Return exit code based on findings
