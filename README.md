@@ -259,7 +259,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ronak Parmar**  
 Software Engineer | Cybersecurity Researcher  
-2.5 years experience in C/C++ and systems engineering
+2.5+ years experience in C/C++ and systems engineering
 
 ---
 
