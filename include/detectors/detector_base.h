@@ -44,7 +44,7 @@ class DetectorBase : public ASTVisitor {
                           const std::string& recommendation, Severity severity, int line,
                           int column, const std::string& codeSnippet = "") {
         vulnerabilities_.push_back(
-            {type, description, recommendation, severity, line, column, codeSnippet});
+            {type, description, recommendation, severity, line, column, "", codeSnippet});
     }
 
     // Convert severity to string
