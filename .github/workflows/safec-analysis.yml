@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -125,6 +130,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: gh-pages
         destination_dir: safec-reports
+        force_orphan: true
 
     - name: Copy latest report
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -139,6 +145,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: gh-pages
         keep_files: true
+        force_orphan: false
     
     - name: Comment PR with Report Link
       if: github.event_name == 'pull_request'
