@@ -1,21 +1,85 @@
-MIT License
+SafeC - Dual License Agreement
 
 Copyright (c) 2025 Ronak Parmar
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software is provided under a dual licensing model:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+===============================================================================
+LICENSE TERMS
+===============================================================================
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. NON-COMMERCIAL USE (Free)
+   You are free to use, copy, modify, and distribute this software for any
+   non-commercial purpose, provided that:
+   - This copyright notice and license terms are included in all copies
+   - The software is not used for commercial purposes
+   - No warranty is provided (see disclaimer below)
+
+2. COMMERCIAL USE (Paid License Required)
+   For any commercial use, including but not limited to:
+   - Using SafeC in a commercial product or service
+   - Using SafeC for consulting services offered for profit
+   - Using SafeC in a business environment for business purposes
+   - Selling or providing SafeC as part of a commercial offering
+   - Using SafeC to analyze code that will be sold or commercialized
+   
+   A commercial license agreement is REQUIRED. You must contact the copyright
+   holder at: [to be determined - add your contact info]
+   
+   Commercial licensing terms include:
+   - Payment based on scope of use and organization size
+   - Commercial license fee and ongoing support options
+   - Right to use SafeC for commercial purposes
+   - Access to priority support and updates
+
+3. RESTRICTIONS
+   - You may NOT use this software for commercial purposes without a paid
+     commercial license
+   - You may NOT remove or obscure this license notice
+   - You may NOT sublicense the software for commercial use
+   - If you modify the software, you must retain this notice
+
+4. DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+5. CONTACT FOR COMMERCIAL LICENSE
+   For commercial licensing inquiries, please contact:
+   Name: Ronak Parmar
+   GitHub: https://github.com/ronakj8617
+   
+   Include in your inquiry:
+   - Company/Organization name
+   - Type of commercial use
+   - Expected scale/scope of usage
+   - Timeline for implementation
+
+===============================================================================
+WHAT COUNTS AS COMMERCIAL USE?
+===============================================================================
+
+Commercial use includes, but is not limited to:
+✓ Using SafeC as part of a commercial product
+✓ Using SafeC in a business/enterprise environment
+✓ Consulting services where SafeC is used to generate billable work
+✓ Analyzing code that will be commercialized
+✓ Integrating SafeC into a paid service
+✓ Using SafeC in a startup or business context
+✓ Government/public sector use (enterprise use)
+
+Non-commercial use includes:
+✓ Personal/educational use
+✓ Open-source projects (non-commercial)
+✓ Academic research and teaching
+✓ Internal non-commercial analysis
+✓ Community projects without revenue model
+
+===============================================================================
+
+Version: 1.0
+Last Updated: December 9, 2025
