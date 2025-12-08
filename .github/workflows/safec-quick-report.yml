@@ -50,6 +50,33 @@ jobs:
       id: analysis
       run: |
         ./build/safec -d --html JulietPipelineReport.html ./juliet-test-suite-c/testcases 2>&1 | tee analysis.log
+        # Exit codes: 0=no issues, 1=issues found, 2=critical issues found
+        # All are considered successful analysis
+        exit_code=$?
+        if [ $exit_code -eq 0 ] || [ $exit_code -eq 1 ] || [ $exit_code -eq 2 ]; then
+          exit 0
+        fi
+        exit $exit_code
+
+    - name: Upload analysis log (always)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: safec-analysis-log-${{ github.run_id }}
+        path: |
+          analysis.log
+          JulietPipelineReport.html
+        retention-days: 90
+
+    - name: Show tail of analysis log
+      if: always()
+      run: |
+        if [ -f analysis.log ]; then
+          echo "---- Last 200 lines of analysis.log ----";
+          tail -n 200 analysis.log || true;
+        else
+          echo "No analysis.log found";
+        fi
     
     - name: Generate analysis summary
       run: |
