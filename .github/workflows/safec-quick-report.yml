@@ -19,9 +19,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: recursive
+    
+    - name: Checkout Juliet Test Suite
+      run: |
+        if [ ! -d "juliet-test-suite-c" ]; then
+          git clone https://github.com/ronakj8617/juliet-test-suite-c.git
+        fi
     
     - name: Cache build dependencies
       uses: actions/cache@v4
