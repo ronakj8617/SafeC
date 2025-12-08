@@ -197,6 +197,20 @@ void Lexer::skipWhitespace() {
                 }
                 advance();
             }
+        } else if (c == '#') {
+            // Preprocessor directive - skip entire line(s) including continuations
+            while (!isAtEnd()) {
+                if (currentChar() == '\\' && peekChar() == '\n') {
+                    // Line continuation - skip backslash and newline
+                    advance();  // skip '\'
+                    advance();  // skip '\n'
+                } else if (currentChar() == '\n') {
+                    advance();  // skip the newline
+                    break;
+                } else {
+                    advance();
+                }
+            }
         } else {
             break;
         }
