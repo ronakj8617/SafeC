@@ -9,51 +9,56 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens_(tokens), current_(0) 
 std::unique_ptr<Program> Parser::parse() {
     auto program = std::make_unique<Program>();
 
-    std::cout << "Starting parsing..." << std::endl;
+    // Reduce verbosity - only show summary
     int functionCount = 0;
+    int tokenCount = 0;
 
     while (!isAtEnd()) {
-        try {
-            Token currentToken = peek();
-            std::cout << "Processing token at line " << currentToken.line << ", column "
-                      << currentToken.column << ": " << currentToken.value << std::endl;
+        tokenCount++;
+        
+        // Safety check to prevent infinite loops at top level
+        if (tokenCount > 100000) {
+            error("Too many tokens processed - possible infinite loop");
+            break;
+        }
 
+        try {
+            size_t positionBefore = current_;
+            
             // Try to parse function declaration
             if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_VOID) ||
                 check(TokenType::KEYWORD_CHAR)) {
-                std::cout << "  Attempting to parse function declaration..." << std::endl;
                 auto func = parseFunctionDeclaration();
                 if (func) {
                     functionCount++;
-                    std::cout << "  Successfully parsed function: " << func->name << std::endl;
                     program->functions.push_back(std::move(func));
-                } else {
-                    std::cout << "  Function parsing returned nullptr" << std::endl;
                 }
             } else {
                 // Skip unknown tokens
-                std::cout << "  Skipping unknown token" << std::endl;
+                advance();
+            }
+            
+            // If we didn't advance, force advance to prevent infinite loop
+            if (current_ == positionBefore && !isAtEnd()) {
+                error("Parser stuck at top level - forcing advance");
                 advance();
             }
         } catch (const std::exception& e) {
             error(std::string("Exception during parsing: ") + e.what());
-            std::cerr << "Exception caught: " << e.what() << std::endl;
             synchronize();
         } catch (...) {
             error("Unknown exception during parsing");
-            std::cerr << "Unknown exception caught" << std::endl;
             synchronize();
         }
     }
 
-    std::cout << "Parsing completed. Found " << functionCount << " function(s)." << std::endl;
-
-    // Print errors if any
-    if (!errors_.empty()) {
-        std::cerr << "Parsing completed with " << errors_.size() << " error(s):" << std::endl;
-        for (const auto& err : errors_) {
-            std::cerr << "  " << err << std::endl;
+    // Only print summary
+    if (functionCount > 0 || !errors_.empty()) {
+        std::cout << "Parsed " << functionCount << " function(s)";
+        if (!errors_.empty()) {
+            std::cout << " with " << errors_.size() << " error(s)";
         }
+        std::cout << std::endl;
     }
 
     return program;
@@ -75,10 +80,12 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
 
     // Function name
     if (!check(TokenType::IDENTIFIER)) {
-        error("Expected function name");
+        error("Expected function name after return type");
         return nullptr;
     }
     func->name = advance().value;
+    
+    std::cerr << "DEBUG: Parsing function '" << func->name << "' at line " << func->line << std::endl;
 
     // Parameters
     if (!match(TokenType::LPAREN)) {
@@ -86,20 +93,55 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
         return nullptr;
     }
 
+    // Add safety counter to prevent infinite loops
+    int paramTokenCount = 0;
+    const int MAX_PARAM_TOKENS = 1000;  // Reasonable limit for parameter list
+
     while (!check(TokenType::RPAREN) && !isAtEnd()) {
-        if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_CHAR) ||
-            check(TokenType::KEYWORD_VOID)) {
-            std::string paramType = advance().value;
-            std::string paramName = "";
+        paramTokenCount++;
+        if (paramTokenCount > MAX_PARAM_TOKENS) {
+            error("Parameter list too long or malformed - skipping function");
+            // Skip to next semicolon or brace to recover
+            while (!isAtEnd() && !check(TokenType::SEMICOLON) && !check(TokenType::LBRACE)) {
+                advance();
+            }
+            return nullptr;
+        }
+
+        // Try to parse parameter type (may be compound like "unsigned int", "const char*", etc.)
+        std::string paramType;
+        int typeStartPos = current_;
+        
+        // Collect all tokens that could be part of the type
+        while (!isAtEnd() && (check(TokenType::IDENTIFIER) || check(TokenType::KEYWORD_INT) ||
+                              check(TokenType::KEYWORD_CHAR) || check(TokenType::KEYWORD_VOID) ||
+                              check(TokenType::STAR))) {
+            paramType += advance().value;
+            paramType += " ";
+        }
+
+        // If we collected any type tokens, parse the parameter name
+        if (!paramType.empty()) {
+            paramType.pop_back();  // Remove trailing space
+            
+            std::string paramName;
             if (check(TokenType::IDENTIFIER)) {
                 paramName = advance().value;
+                // Handle pointer indicators in parameter name (e.g., *ptr)
+                while (check(TokenType::STAR)) {
+                    paramName = advance().value + paramName;
+                }
             }
+            
             func->parameters.push_back({paramType, paramName});
 
+            // Check for comma between parameters
             if (check(TokenType::COMMA)) {
                 advance();
             }
-        } else {
+        } else if (!check(TokenType::RPAREN)) {
+            // No type tokens found and not at closing paren - skip to recover
+            error("Unexpected token in parameter list");
             advance();
         }
     }
@@ -128,10 +170,31 @@ std::unique_ptr<BlockStatement> Parser::parseBlockStatement() {
 
     consume(TokenType::LBRACE, "Expected '{'");
 
+    // Add safety counter to prevent infinite loops
+    int stmtCount = 0;
+    const int MAX_STATEMENTS = 10000;  // Reasonable limit for statements in a block
+
     while (!check(TokenType::RBRACE) && !isAtEnd()) {
+        stmtCount++;
+        if (stmtCount > MAX_STATEMENTS) {
+            error("Block statement too long or malformed - skipping rest of block");
+            // Skip to closing brace
+            while (!isAtEnd() && !check(TokenType::RBRACE)) {
+                advance();
+            }
+            break;
+        }
+
+        size_t positionBefore = current_;
         auto stmt = parseStatement();
         if (stmt) {
             block->statements.push_back(std::move(stmt));
+        }
+        
+        // If we didn't advance, force advance to prevent infinite loop
+        if (current_ == positionBefore) {
+            error("Parser stuck - forcing advance");
+            advance();
         }
     }
 
@@ -429,9 +492,35 @@ std::unique_ptr<Expression> Parser::parsePostfix() {
 
             // Arguments
             while (!check(TokenType::RPAREN) && !isAtEnd()) {
-                funcCall->arguments.push_back(parseExpression());
+                // Parse an argument; if parsing fails (nullptr) recover by
+                // skipping to the next comma or closing parenthesis to avoid
+                // an infinite loop where parseExpression repeatedly returns
+                // nullptr without advancing the token stream.
+                auto arg = parseExpression();
+                if (!arg) {
+                    // Skip tokens until we find a comma or closing paren
+                    while (!isAtEnd() && !check(TokenType::COMMA) && !check(TokenType::RPAREN)) {
+                        advance();
+                    }
+                    // If there's a comma, consume it so the loop can continue
+                    if (check(TokenType::COMMA)) {
+                        advance();
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                funcCall->arguments.push_back(std::move(arg));
+
                 if (!check(TokenType::RPAREN)) {
-                    consume(TokenType::COMMA, "Expected ',' between arguments");
+                    if (check(TokenType::COMMA)) {
+                        advance();
+                    } else {
+                        // Missing comma - record an error and try to recover
+                        consume(TokenType::COMMA, "Expected ',' between arguments");
+                        break;
+                    }
                 }
             }
 
