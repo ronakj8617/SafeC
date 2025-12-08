@@ -18,13 +18,13 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: recursive
     
     - name: Cache build dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: build
         key: ${{ runner.os }}-safec-build-${{ github.sha }}
@@ -62,7 +62,7 @@ jobs:
         echo "\`\`\`" >> analysis_summary.md
     
     - name: Upload analysis artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: safec-analysis-${{ github.run_id }}
         path: |
