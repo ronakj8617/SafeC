@@ -12,7 +12,7 @@ import sys
 
 # Configuration
 suite_path = "./juliet-test-suite-c/testcases"
-max_files = None  # Set to None for unlimited, or a number to limit
+max_files = 10000  # Set to None for unlimited, or a number to limit
 specific_cwes = [
     "CWE121_Stack_Based_Buffer_Overflow",
     "CWE122_Heap_Based_Buffer_Overflow",

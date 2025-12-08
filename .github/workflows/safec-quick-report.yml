@@ -1,0 +1,89 @@
+name: SafeC Analysis - Quick Report
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  safec-analysis:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+    
+    - name: Cache build dependencies
+      uses: actions/cache@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-safec-build-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-safec-build-
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+    
+    - name: Configure and build SafeC
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make -j$(nproc)
+    
+    - name: Run SafeC Static Analysis
+      id: analysis
+      run: |
+        ./build/safec -d --html JulietPipelineReport.html ./juliet-test-suite-c/testcases 2>&1 | tee analysis.log
+    
+    - name: Generate analysis summary
+      run: |
+        echo "# SafeC Analysis Report" > analysis_summary.md
+        echo "" >> analysis_summary.md
+        echo "**Generated:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> analysis_summary.md
+        echo "**Commit:** ${{ github.sha }}" >> analysis_summary.md
+        echo "**Branch:** ${{ github.ref_name }}" >> analysis_summary.md
+        echo "" >> analysis_summary.md
+        echo "Analysis log:" >> analysis_summary.md
+        echo "\`\`\`" >> analysis_summary.md
+        tail -20 analysis.log >> analysis_summary.md
+        echo "\`\`\`" >> analysis_summary.md
+    
+    - name: Upload analysis artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: safec-analysis-${{ github.run_id }}
+        path: |
+          JulietPipelineReport.html
+          analysis_summary.md
+          analysis.log
+        retention-days: 90
+    
+    - name: Display analysis summary
+      run: cat analysis_summary.md
+    
+    - name: Post PR comment with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('analysis_summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary + '\n\n[📊 View Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+          })
