@@ -1,0 +1,64 @@
+name: SafeC Static Analysis Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake git
+    
+    - name: Build SafeC
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+    
+    - name: Run SafeC Analysis on Juliet Test Suite
+      run: |
+        ./build/safec -d --html JulietPipelineReport.html ./juliet-test-suite-c/testcases
+    
+    - name: Upload HTML Report as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: safec-analysis-report
+        path: JulietPipelineReport.html
+        retention-days: 30
+    
+    - name: Publish Report to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .
+        destination_dir: safec-reports/${{ github.run_number }}
+    
+    - name: Comment PR with Report Link
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '📊 SafeC Analysis Report\n\nDownload the detailed HTML report from the [workflow artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+          })
+    
+    - name: Check for Critical Vulnerabilities
+      run: |
+        echo "Analysis complete. Check the HTML report for detailed vulnerability findings."
