@@ -17,7 +17,7 @@ jobs:
     - name: Checkout Juliet Test Suite
       run: |
         if [ ! -d "juliet-test-suite-c" ]; then
-          git clone https://github.com/ronakj8617/juliet-test-suite-c.git
+          git clone https://github.com/arichardson/juliet-test-suite-c.git
         fi
     
     - name: Install dependencies
