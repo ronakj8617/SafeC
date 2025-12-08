@@ -110,7 +110,6 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
 
         // Try to parse parameter type (may be compound like "unsigned int", "const char*", etc.)
         std::string paramType;
-        int typeStartPos = current_;
         
         // Collect all tokens that could be part of the type
         while (!isAtEnd() && (check(TokenType::IDENTIFIER) || check(TokenType::KEYWORD_INT) ||
