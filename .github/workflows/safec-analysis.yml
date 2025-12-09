@@ -123,29 +123,25 @@ jobs:
         EOF
         cp gh-pages/index.html gh-pages/latest-index.html
 
-    - name: Publish Report to GitHub Pages
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: gh-pages
-        destination_dir: safec-reports
-        force_orphan: true
-
-    - name: Copy latest report
+    - name: Prepare GitHub Pages content
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         mkdir -p gh-pages/latest
         cp JulietPipelineReport.html gh-pages/latest/JulietPipelineReport.html
-    
-    - name: Publish Latest Report to GitHub Pages
+        cp analysis.log gh-pages/latest/analysis.log 2>/dev/null || true
+
+    - name: Upload artifact for GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: actions/upload-artifact@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: gh-pages
-        keep_files: true
-        force_orphan: false
+        name: github-pages
+        path: gh-pages
+        retention-days: 1
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      id: deployment
+      uses: actions/deploy-pages@v2
     
     - name: Comment PR with Report Link
       if: github.event_name == 'pull_request'
