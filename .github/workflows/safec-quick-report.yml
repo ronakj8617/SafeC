@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
     
@@ -152,18 +152,14 @@ jobs:
         cp JulietPipelineReport.html gh-pages/latest/JulietPipelineReport.html
         cp analysis.log gh-pages/latest/analysis.log
     
-    - name: Upload artifact for GitHub Pages
+    - name: Deploy to GitHub Pages via git
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: actions/upload-artifact@v4
-      with:
-        name: github-pages
-        path: gh-pages
-        retention-days: 1
-
-    - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      id: deployment
-      uses: actions/deploy-pages@v2
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add gh-pages/
+        git commit -m "Deploy SafeC reports - run ${{ github.run_number }}" || true
+        git push origin HEAD:gh-pages --force
     
     - name: Post PR comment with results
       if: github.event_name == 'pull_request'
