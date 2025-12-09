@@ -178,12 +178,15 @@ jobs:
         # Create a temporary directory for Pages content
         mkdir -p /tmp/pages-content
         cp index.html /tmp/pages-content/ 2>/dev/null || echo "Creating index.html in Pages"
-        cp -r latest /tmp/pages-content/ 2>/dev/null || mkdir -p /tmp/pages-content/latest
+        mkdir -p /tmp/pages-content/latest
         cp latest/report-summary.txt /tmp/pages-content/latest/ 2>/dev/null || true
         
-        # Checkout gh-pages branch
-        git fetch origin gh-pages:gh-pages 2>/dev/null || true
-        git checkout gh-pages || git checkout --orphan gh-pages
+        # Clean up files that would conflict when checking out gh-pages
+        rm -rf index.html latest/
+        
+        # Fetch and checkout gh-pages branch
+        git fetch origin gh-pages 2>/dev/null || true
+        git checkout -B gh-pages origin/gh-pages 2>/dev/null || git checkout --orphan gh-pages
         
         # Copy Pages content to current working directory
         cp /tmp/pages-content/index.html . 2>/dev/null || true
