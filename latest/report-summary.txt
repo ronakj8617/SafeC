@@ -1,0 +1,54 @@
+
+[591944] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591945] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591946] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591947] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591948] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591949] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591950] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+[591951] Potential Integer Overflow - LOW
+    Location: Line 0, Column 0
+    Description: Unchecked arithmetic operation '*' could overflow
+    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+
+--------------------------------------------------------------------------------
+Summary:
+  CRITICAL: 13787
+  HIGH:     150190
+  MEDIUM:   83668
+  LOW:      344306
+================================================================================
+
+HTML report written to: JulietPipelineReport.html
+
+=== Analysis Complete ===
+Full reports available in GitHub Actions artifacts.
+Run: https://github.com/ronakj8617/SafeC/actions/runs/20068453451
