@@ -58,14 +58,24 @@ jobs:
         fi
         exit $exit_code
 
+    - name: Compress reports for storage
+      run: |
+        # Compress the large HTML report
+        gzip -9 JulietPipelineReport.html -c > JulietPipelineReport.html.gz
+        gzip -9 analysis.log -c > analysis.log.gz
+        
+        # Get file sizes
+        echo "=== File Sizes ==="
+        du -h JulietPipelineReport.html JulietPipelineReport.html.gz analysis.log analysis.log.gz
+
     - name: Upload analysis log (always)
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: safec-analysis-log-${{ github.run_id }}
         path: |
-          analysis.log
-          JulietPipelineReport.html
+          analysis.log.gz
+          JulietPipelineReport.html.gz
         retention-days: 90
 
     - name: Show tail of analysis log
@@ -145,12 +155,19 @@ jobs:
         </html>
         EOF
 
-    - name: Copy latest report
+    - name: Copy latest report summary
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         mkdir -p gh-pages/latest
-        cp JulietPipelineReport.html gh-pages/latest/JulietPipelineReport.html
-        cp analysis.log gh-pages/latest/analysis.log
+        
+        # Extract and get summary from analysis log
+        if [ -f analysis.log ]; then
+          tail -50 analysis.log > gh-pages/latest/report-summary.txt
+          echo "" >> gh-pages/latest/report-summary.txt
+          echo "=== Analysis Complete ===" >> gh-pages/latest/report-summary.txt
+          echo "Full reports available in GitHub Actions artifacts." >> gh-pages/latest/report-summary.txt
+          echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> gh-pages/latest/report-summary.txt
+        fi
     
     - name: Deploy to GitHub Pages via git
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
