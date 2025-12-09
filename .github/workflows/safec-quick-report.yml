@@ -158,15 +158,15 @@ jobs:
     - name: Copy latest report summary
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        mkdir -p gh-pages/latest
+        mkdir -p latest
         
         # Extract and get summary from analysis log
         if [ -f analysis.log ]; then
-          tail -50 analysis.log > gh-pages/latest/report-summary.txt
-          echo "" >> gh-pages/latest/report-summary.txt
-          echo "=== Analysis Complete ===" >> gh-pages/latest/report-summary.txt
-          echo "Full reports available in GitHub Actions artifacts." >> gh-pages/latest/report-summary.txt
-          echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> gh-pages/latest/report-summary.txt
+          tail -50 analysis.log > latest/report-summary.txt
+          echo "" >> latest/report-summary.txt
+          echo "=== Analysis Complete ===" >> latest/report-summary.txt
+          echo "Full reports available in GitHub Actions artifacts." >> latest/report-summary.txt
+          echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> latest/report-summary.txt
         fi
     
     - name: Deploy to GitHub Pages via git
@@ -174,7 +174,7 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add gh-pages/
+        git add index.html latest/
         git commit -m "Deploy SafeC reports - run ${{ github.run_number }}" || true
         git push origin HEAD:gh-pages --force
     
