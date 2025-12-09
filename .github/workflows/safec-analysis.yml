@@ -48,14 +48,24 @@ jobs:
         fi
         exit $exit_code
 
+    - name: Compress reports for storage
+      run: |
+        # Compress the large HTML report
+        gzip -9 JulietPipelineReport.html -c > JulietPipelineReport.html.gz
+        gzip -9 analysis.log -c > analysis.log.gz
+        
+        # Get file sizes
+        echo "=== File Sizes ==="
+        du -h JulietPipelineReport.html JulietPipelineReport.html.gz analysis.log analysis.log.gz
+
     - name: Upload analysis log (always)
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: safec-analysis-log-${{ github.run_id }}
         path: |
-          analysis.log
-          JulietPipelineReport.html
+          analysis.log.gz
+          JulietPipelineReport.html.gz
         retention-days: 30
 
     - name: Show tail of analysis log
@@ -101,17 +111,21 @@ jobs:
             <p>Latest vulnerability analysis reports from the SafeC static analyzer on the Juliet test suite.</p>
             
             <div class="latest">
-              <strong>📍 Latest Report:</strong>
+              <strong>📍 Latest Report Summary:</strong>
               <div class="report-link">
-                <a href="latest/JulietPipelineReport.html" target="_blank">View Latest SafeC Analysis Report</a>
+                <a href="latest/report-summary.txt" target="_blank">📄 View Latest Summary</a>
                 <div class="timestamp">Generated: ${{ github.event.head_commit.timestamp }}</div>
               </div>
+              <p><small>Full HTML and log reports are available in GitHub Actions artifacts (download from workflow run).</small></p>
             </div>
             
-            <h2>All Reports</h2>
-            <p>Navigate to dated reports:</p>
+            <h2>Download Full Reports</h2>
+            <p>Full analysis reports are stored as compressed artifacts in GitHub Actions:</p>
             <ul>
-              <li><a href="run-${{ github.run_number }}/JulietPipelineReport.html">Run #${{ github.run_number }}</a> - Latest Push</li>
+              <li>Visit: <a href="https://github.com/${{ github.repository }}/actions">GitHub Actions</a></li>
+              <li>Find the latest workflow run</li>
+              <li>Download: <code>safec-analysis-log-XXXX</code> artifact (contains .html.gz and .log.gz files)</li>
+              <li>Extract: <code>gunzip filename.gz</code></li>
             </ul>
             
             <hr>
@@ -127,8 +141,15 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         mkdir -p gh-pages/latest
-        cp JulietPipelineReport.html gh-pages/latest/JulietPipelineReport.html
-        cp analysis.log gh-pages/latest/analysis.log 2>/dev/null || true
+        
+        # Extract and get summary from analysis log
+        if [ -f analysis.log ]; then
+          tail -50 analysis.log > gh-pages/latest/report-summary.txt
+          echo "" >> gh-pages/latest/report-summary.txt
+          echo "=== Analysis Complete ===" >> gh-pages/latest/report-summary.txt
+          echo "Full reports available in GitHub Actions artifacts." >> gh-pages/latest/report-summary.txt
+          echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> gh-pages/latest/report-summary.txt
+        fi
 
     - name: Deploy to GitHub Pages via git
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
