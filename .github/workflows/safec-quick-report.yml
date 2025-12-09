@@ -174,9 +174,26 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add index.html latest/
+        
+        # Create a temporary directory for Pages content
+        mkdir -p /tmp/pages-content
+        cp index.html /tmp/pages-content/ 2>/dev/null || echo "Creating index.html in Pages"
+        cp -r latest /tmp/pages-content/ 2>/dev/null || mkdir -p /tmp/pages-content/latest
+        cp latest/report-summary.txt /tmp/pages-content/latest/ 2>/dev/null || true
+        
+        # Checkout gh-pages branch
+        git fetch origin gh-pages:gh-pages 2>/dev/null || true
+        git checkout gh-pages || git checkout --orphan gh-pages
+        
+        # Copy Pages content to current working directory
+        cp /tmp/pages-content/index.html . 2>/dev/null || true
+        mkdir -p latest
+        cp -r /tmp/pages-content/latest/* latest/ 2>/dev/null || true
+        
+        # Commit and push
+        git add index.html latest/ || true
         git commit -m "Deploy SafeC reports - run ${{ github.run_number }}" || true
-        git push origin HEAD:gh-pages --force
+        git push origin gh-pages --force
     
     - name: Post PR comment with results
       if: github.event_name == 'pull_request'
