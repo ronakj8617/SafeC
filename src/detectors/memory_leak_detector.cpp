@@ -40,7 +40,7 @@ void MemoryLeakDetector::visit(VariableDeclaration& node) {
     if (node.initializer) {
         if (auto* call = dynamic_cast<FunctionCall*>(node.initializer.get())) {
             if (call->functionName == "malloc" || call->functionName == "calloc" ||
-                call->functionName == "realloc") {
+                call->functionName == "realloc" || call->functionName == "new") {
                 trackAllocation(node.name, node.line, node.column);
             }
         }
@@ -116,7 +116,7 @@ void MemoryLeakDetector::visit(BinaryExpression& node) {
         if (auto* lhs = dynamic_cast<Identifier*>(node.left.get())) {
             if (auto* rhs = dynamic_cast<FunctionCall*>(node.right.get())) {
                 if (rhs->functionName == "malloc" || rhs->functionName == "calloc" ||
-                    rhs->functionName == "realloc") {
+                    rhs->functionName == "realloc" || rhs->functionName == "new") {
                     trackAllocation(lhs->name, node.line, node.column);
                 }
             }

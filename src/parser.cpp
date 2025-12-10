@@ -179,8 +179,6 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
     }
     
     func->name = functionName;
-    
-    std::cerr << "DEBUG: Parsing function '" << func->name << "' at line " << func->line << std::endl;
 
     // Skip qualifiers like "const", "override", etc.
     while (!isAtEnd() && (peek().value == "const" || peek().value == "override" ||
@@ -667,10 +665,51 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
 
     // Handle malloc, free, new, delete as if they were identifiers (function names)
     if (match({TokenType::KEYWORD_MALLOC, TokenType::KEYWORD_FREE, TokenType::KEYWORD_NEW, TokenType::KEYWORD_DELETE})) {
+        std::string keyword = previous().value;
+        int kw_line = previous().line;
+        int kw_column = previous().column;
+        
+        // Special handling for 'new' - it takes a type, not parentheses
+        // e.g., new int, new char*, new MyClass
+        if (keyword == "new") {
+            auto funcCall = std::make_unique<FunctionCall>();
+            funcCall->functionName = "new";
+            funcCall->line = kw_line;
+            funcCall->column = kw_column;
+            
+            // Consume the type being allocated (int, char*, MyClass, etc.)
+            // We don't need to parse it correctly, just skip it for now
+            // to identify that this is a new allocation
+            if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_CHAR) || 
+                check(TokenType::KEYWORD_VOID) || check(TokenType::IDENTIFIER)) {
+                advance();  // Skip the type name
+                
+                // Handle pointer/reference qualifiers
+                while (match({TokenType::STAR, TokenType::AMPERSAND})) {
+                    // Skip these
+                }
+                
+                // Handle array brackets for new[] syntax
+                if (check(TokenType::LBRACKET)) {
+                    advance();  // Skip [
+                    // Parse the array size expression (or skip it)
+                    while (!check(TokenType::RBRACKET) && !isAtEnd()) {
+                        advance();
+                    }
+                    if (match(TokenType::RBRACKET)) {
+                        // Matched ]
+                    }
+                }
+            }
+            
+            return funcCall;
+        }
+        
+        // For other keywords, create an identifier as before
         auto id = std::make_unique<Identifier>();
-        id->name = previous().value;
-        id->line = previous().line;
-        id->column = previous().column;
+        id->name = keyword;
+        id->line = kw_line;
+        id->column = kw_column;
         return id;
     }
 
