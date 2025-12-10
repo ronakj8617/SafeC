@@ -38,6 +38,7 @@ class Parser {
     bool match(const std::vector<TokenType>& types);
     void consume(TokenType type, const std::string& message);
     bool isAtEnd();
+    bool isReturnType(const Token& token);
 
     void error(const std::string& message);
     void synchronize();

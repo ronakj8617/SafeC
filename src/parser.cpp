@@ -9,14 +9,12 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens_(tokens), current_(0) 
 std::unique_ptr<Program> Parser::parse() {
     auto program = std::make_unique<Program>();
 
-    // Reduce verbosity - only show summary
     int functionCount = 0;
     int tokenCount = 0;
 
     while (!isAtEnd()) {
         tokenCount++;
         
-        // Safety check to prevent infinite loops at top level
         if (tokenCount > 100000) {
             error("Too many tokens processed - possible infinite loop");
             break;
@@ -25,9 +23,37 @@ std::unique_ptr<Program> Parser::parse() {
         try {
             size_t positionBefore = current_;
             
+            // Skip preprocessor directives
+            if (peek().value == "#") {
+                while (!isAtEnd() && peek().type != TokenType::SEMICOLON && 
+                       peek().value != "\n") {
+                    advance();
+                }
+                continue;
+            }
+
+            // Skip namespace declarations
+            if (peek().value == "namespace") {
+                advance(); // skip "namespace"
+                if (check(TokenType::IDENTIFIER)) {
+                    advance(); // skip namespace name
+                }
+                if (peek().value == "{") {
+                    advance(); // skip "{"
+                }
+                continue;
+            }
+
+            // Skip closing braces for namespaces
+            if (peek().value == "}") {
+                advance();
+                continue;
+            }
+
             // Try to parse function declaration
-            if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_VOID) ||
-                check(TokenType::KEYWORD_CHAR)) {
+            // Functions can start with: return type (int, void, char, etc.)
+            // OR any identifier (user-defined types)
+            if (isReturnType(peek())) {
                 auto func = parseFunctionDeclaration();
                 if (func) {
                     functionCount++;
@@ -52,7 +78,6 @@ std::unique_ptr<Program> Parser::parse() {
         }
     }
 
-    // Only print summary
     if (functionCount > 0 || !errors_.empty()) {
         std::cout << "Parsed " << functionCount << " function(s)";
         if (!errors_.empty()) {
@@ -67,25 +92,101 @@ std::unique_ptr<Program> Parser::parse() {
 std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
     auto func = std::make_unique<FunctionDeclaration>();
 
-    // Return type
-    if (isAtEnd()) {
-        error("Unexpected end of file");
+    // Return type (can be multiple tokens: "unsigned int", "const char*", etc.)
+    std::string returnType;
+    
+    // Collect all tokens that form the return type
+    while (!isAtEnd() && peek().type != TokenType::LPAREN &&
+           peek().value != "::") {
+        if (peek().type == TokenType::IDENTIFIER && 
+            (peek().value == "const" || peek().value == "unsigned" || 
+             peek().value == "signed" || peek().value == "volatile")) {
+            // These are type qualifiers
+            returnType += peek().value;
+            returnType += " ";
+            func->line = peek().line;
+            func->column = peek().column;
+            advance();
+        } else if (peek().type == TokenType::KEYWORD_INT || 
+                   peek().type == TokenType::KEYWORD_VOID ||
+                   peek().type == TokenType::KEYWORD_CHAR) {
+            // Keyword type
+            returnType += peek().value;
+            returnType += " ";
+            func->line = peek().line;
+            func->column = peek().column;
+            advance();
+        } else if (peek().type == TokenType::IDENTIFIER) {
+            // Could be user-defined type or start of function name
+            // Peek ahead to distinguish
+            size_t lookahead = current_ + 1;
+            if (lookahead < tokens_.size()) {
+                const Token& next = tokens_[lookahead];
+                // If next token is also an identifier (not LPAREN), then current is return type
+                if (next.type == TokenType::IDENTIFIER) {
+                    returnType += peek().value;
+                    returnType += " ";
+                    func->line = peek().line;
+                    func->column = peek().column;
+                    advance();
+                } else if (next.type == TokenType::LPAREN) {
+                    // This identifier is the function name, not part of return type
+                    break;
+                } else {
+                    // Could be return type
+                    returnType += peek().value;
+                    returnType += " ";
+                    func->line = peek().line;
+                    func->column = peek().column;
+                    advance();
+                }
+            } else {
+                break;
+            }
+        } else {
+            // Star, ampersand, or other type modifier
+            returnType += peek().value;
+            func->line = peek().line;
+            func->column = peek().column;
+            advance();
+        }
+    }
+    
+    // Remove trailing space
+    if (!returnType.empty() && returnType.back() == ' ') {
+        returnType.pop_back();
+    }
+    func->returnType = returnType;
+
+    // Function name (handle class methods where two identifiers appear before LPAREN)
+    std::string functionName;
+    
+    if (check(TokenType::IDENTIFIER)) {
+        std::string firstName = advance().value;
+        
+        // Check if next token is another identifier (class method pattern)
+        if (check(TokenType::IDENTIFIER)) {
+            // This is a class method: firstName::secondName
+            // The :: was skipped by the lexer, so we just have two identifiers
+            functionName = advance().value;  // The actual method name
+        } else {
+            // Simple function
+            functionName = firstName;
+        }
+    } else {
+        error("Expected function or method name");
         return nullptr;
     }
-
-    Token returnType = advance();
-    func->returnType = returnType.value;
-    func->line = returnType.line;
-    func->column = returnType.column;
-
-    // Function name
-    if (!check(TokenType::IDENTIFIER)) {
-        error("Expected function name after return type");
-        return nullptr;
-    }
-    func->name = advance().value;
+    
+    func->name = functionName;
     
     std::cerr << "DEBUG: Parsing function '" << func->name << "' at line " << func->line << std::endl;
+
+    // Skip qualifiers like "const", "override", etc.
+    while (!isAtEnd() && (peek().value == "const" || peek().value == "override" ||
+                          peek().value == "virtual" || peek().value == "noexcept")) {
+        advance();
+    }
 
     // Parameters
     if (!match(TokenType::LPAREN)) {
@@ -93,28 +194,28 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
         return nullptr;
     }
 
-    // Add safety counter to prevent infinite loops
     int paramTokenCount = 0;
-    const int MAX_PARAM_TOKENS = 1000;  // Reasonable limit for parameter list
+    const int MAX_PARAM_TOKENS = 1000;
 
     while (!check(TokenType::RPAREN) && !isAtEnd()) {
         paramTokenCount++;
         if (paramTokenCount > MAX_PARAM_TOKENS) {
             error("Parameter list too long or malformed - skipping function");
-            // Skip to next semicolon or brace to recover
             while (!isAtEnd() && !check(TokenType::SEMICOLON) && !check(TokenType::LBRACE)) {
                 advance();
             }
             return nullptr;
         }
 
-        // Try to parse parameter type (may be compound like "unsigned int", "const char*", etc.)
+        // Parse parameter type (may be compound like "unsigned int", "const char*", etc.)
         std::string paramType;
         
         // Collect all tokens that could be part of the type
         while (!isAtEnd() && (check(TokenType::IDENTIFIER) || check(TokenType::KEYWORD_INT) ||
                               check(TokenType::KEYWORD_CHAR) || check(TokenType::KEYWORD_VOID) ||
-                              check(TokenType::STAR))) {
+                              check(TokenType::STAR) || check(TokenType::AMPERSAND) ||
+                              peek().value == "const" || peek().value == "unsigned" ||
+                              peek().value == "signed")) {
             paramType += advance().value;
             paramType += " ";
         }
@@ -148,6 +249,12 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration() {
     if (!match(TokenType::RPAREN)) {
         error("Expected ')' after parameters");
         return nullptr;
+    }
+
+    // Skip trailing qualifiers like "const override noexcept"
+    while (!isAtEnd() && (peek().value == "const" || peek().value == "override" ||
+                          peek().value == "noexcept" || peek().value == "volatile")) {
+        advance();
     }
 
     // Function body or semicolon
@@ -667,6 +774,32 @@ void Parser::synchronize() {
                 advance();
         }
     }
+}
+
+bool Parser::isReturnType(const Token& token) {
+    // Check for primitive return types
+    if (token.type == TokenType::KEYWORD_INT ||
+        token.type == TokenType::KEYWORD_VOID ||
+        token.type == TokenType::KEYWORD_CHAR) {
+        return true;
+    }
+    
+    // Check for user-defined types (identifiers that could be return types)
+    if (token.type == TokenType::IDENTIFIER) {
+        // Common patterns: if next token is another identifier or ::, likely a return type
+        // Peek ahead to see if this looks like a function signature
+        size_t lookahead = current_ + 1;
+        if (lookahead < tokens_.size()) {
+            const Token& next = tokens_[lookahead];
+            // Cases like: "MyClass name" or "std::string name" or "unsigned int name"
+            if (next.type == TokenType::IDENTIFIER || next.value == "::") {
+                return true;
+            }
+        }
+        return true; // assume identifier could be return type
+    }
+    
+    return false;
 }
 
 }  // namespace safec
