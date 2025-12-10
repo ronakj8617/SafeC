@@ -20,6 +20,10 @@ class Utils {
 
     // Get file extension
     static std::string getFileExtension(const std::string& filename);
+
+    // Preprocess code: normalize whitespace and squash line breaks
+    static std::string preprocessCode(const std::string& code);
+    static bool shouldExcludeTestFile(const std::string& filePath);
 };
 
 }  // namespace safec

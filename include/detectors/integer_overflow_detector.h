@@ -7,6 +7,7 @@ class IntegerOverflowDetector : public DetectorBase {
     IntegerOverflowDetector() = default;
 
     void analyze(Program& program) override;
+    void setCurrentFile(const std::string& filename) { currentFile_ = filename; }
     std::string getName() const override {
         return "Integer Overflow Detector";
     }
@@ -32,6 +33,8 @@ class IntegerOverflowDetector : public DetectorBase {
     void visit(Program& node) override;
 
    private:
+    std::string currentFile_;
+    bool shouldCheckOverflow() const;
     void checkArithmeticOperation(BinaryExpression& node);
     void checkArrayIndexCalculation(ArrayAccess& node);
     bool isArithmeticOperator(const std::string& op);

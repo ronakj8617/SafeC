@@ -10,6 +10,8 @@ class MemoryLeakDetector : public DetectorBase {
     MemoryLeakDetector() = default;
 
     void analyze(Program& program) override;
+    void analyzeWithSource(Program& program, const std::string& sourceCode);
+    void setCurrentFile(const std::string& filename) { currentFile_ = filename; }
     std::string getName() const override {
         return "Memory Leak Detector";
     }
@@ -35,13 +37,25 @@ class MemoryLeakDetector : public DetectorBase {
     void visit(Program& node) override;
 
    private:
-    std::set<std::string> allocatedPointers_;
-    std::set<std::string> freedPointers_;
-    std::string currentFunction_;
+    // Track allocations file-wide (not function-scoped)
+    struct AllocationInfo {
+        std::string variableName;
+        std::string allocationType;  // "new", "new[]", "malloc", "calloc", "realloc"
+        int line;
+        int column;
+        bool freed;
+    };
+    
+    std::map<std::string, AllocationInfo> allocations_;  // variable name -> allocation info
+    std::set<std::string> freedVariables_;  // variables that have been freed
+    std::string currentFile_;  // Current file being analyzed
+    std::map<std::string, std::vector<std::string>> functionPointerParams_;  // function -> pointer params
 
-    void trackAllocation(const std::string& ptrName, int line, int column);
+    void trackAllocation(const std::string& ptrName, const std::string& allocType, int line, int column);
     void trackDeallocation(const std::string& ptrName);
     void checkForLeaks();
+    void scanSourceForAllocations(const std::string& sourceCode);
+    void checkPointerParameterLeaks();
 };
 
 }  // namespace safec

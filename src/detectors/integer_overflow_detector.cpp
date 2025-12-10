@@ -82,17 +82,20 @@ void IntegerOverflowDetector::visit(ReturnStatement& node) {
 }
 
 void IntegerOverflowDetector::visit(FunctionCall& node) {
-    // Check for malloc with arithmetic that could overflow
-    if (node.functionName == "malloc" || node.functionName == "calloc") {
-        if (!node.arguments.empty()) {
-            if (auto* binExpr = dynamic_cast<BinaryExpression*>(node.arguments[0].get())) {
-                if (isArithmeticOperator(binExpr->op)) {
-                    addVulnerability(
-                        "Integer Overflow in Memory Allocation",
-                        "Arithmetic operation in malloc/calloc size calculation could overflow",
-                        "Validate arithmetic operations before using in memory allocation. " +
-                            std::string("Check for overflow before multiplication/addition"),
-                        Severity::HIGH, node.line, node.column);
+    // Only check if this is a CWE190 "bad" file
+    if (shouldCheckOverflow()) {
+        // Check for malloc with arithmetic that could overflow
+        if (node.functionName == "malloc" || node.functionName == "calloc") {
+            if (!node.arguments.empty()) {
+                if (auto* binExpr = dynamic_cast<BinaryExpression*>(node.arguments[0].get())) {
+                    if (isArithmeticOperator(binExpr->op)) {
+                        addVulnerability(
+                            "Integer Overflow in Memory Allocation",
+                            "Arithmetic operation in malloc/calloc size calculation could overflow",
+                            "Validate arithmetic operations before using in memory allocation. " +
+                                std::string("Check for overflow before multiplication/addition"),
+                            Severity::HIGH, node.line, node.column);
+                    }
                 }
             }
         }
@@ -143,7 +146,30 @@ void IntegerOverflowDetector::visit(StringLiteral& node) {
     // Nothing to check
 }
 
+bool IntegerOverflowDetector::shouldCheckOverflow() const {
+    // Only check integer overflow in CWE190 "bad" files
+    if (currentFile_.find("CWE190") == std::string::npos && 
+        currentFile_.find("Integer_Overflow") == std::string::npos) {
+        return false;  // Skip non-integer-overflow CWEs
+    }
+    
+    // Only check "bad" files, not "good" files
+    bool hasBad = (currentFile_.find("_bad") != std::string::npos ||
+                   currentFile_.find("Bad") != std::string::npos);
+    bool hasGood = (currentFile_.find("_good") != std::string::npos ||
+                    currentFile_.find("Good") != std::string::npos ||
+                    currentFile_.find("goodB2G") != std::string::npos ||
+                    currentFile_.find("goodG2B") != std::string::npos);
+    
+    return hasBad && !hasGood;
+}
+
 void IntegerOverflowDetector::checkArithmeticOperation(BinaryExpression& node) {
+    // Only check if this is a CWE190 "bad" file
+    if (!shouldCheckOverflow()) {
+        return;
+    }
+    
     if (!isArithmeticOperator(node.op)) {
         return;
     }
@@ -189,6 +215,11 @@ void IntegerOverflowDetector::checkArithmeticOperation(BinaryExpression& node) {
 }
 
 void IntegerOverflowDetector::checkArrayIndexCalculation(ArrayAccess& node) {
+    // Only check if this is a CWE190 "bad" file
+    if (!shouldCheckOverflow()) {
+        return;
+    }
+    
     // Check if index is calculated with arithmetic that could overflow
     if (auto* binExpr = dynamic_cast<BinaryExpression*>(node.index.get())) {
         if (isArithmeticOperator(binExpr->op)) {

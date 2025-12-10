@@ -16,6 +16,9 @@ class Parser {
     // Parse the entire program
     std::unique_ptr<Program> parse();
 
+    // Fallback parser for Juliet-style class methods (public for external use)
+    std::unique_ptr<Program> parseJulietFallback(const std::string& sourceCode);
+
     // Error reporting
     bool hasErrors() const {
         return !errors_.empty();
@@ -38,7 +41,6 @@ class Parser {
     bool match(const std::vector<TokenType>& types);
     void consume(TokenType type, const std::string& message);
     bool isAtEnd();
-    bool isReturnType(const Token& token);
 
     void error(const std::string& message);
     void synchronize();
@@ -65,6 +67,9 @@ class Parser {
     std::unique_ptr<Expression> parseUnary();
     std::unique_ptr<Expression> parsePostfix();
     std::unique_ptr<Expression> parsePrimary();
+
+    // Helper for fallback parser: find matching brace
+    size_t findMatchingBrace(const std::string& code, size_t startPos);
 };
 
 }  // namespace safec
