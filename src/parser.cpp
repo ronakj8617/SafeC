@@ -665,7 +665,55 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
         return id;
     }
 
+    // Handle malloc, free, new, delete as if they were identifiers (function names)
+    if (match({TokenType::KEYWORD_MALLOC, TokenType::KEYWORD_FREE, TokenType::KEYWORD_NEW, TokenType::KEYWORD_DELETE})) {
+        auto id = std::make_unique<Identifier>();
+        id->name = previous().value;
+        id->line = previous().line;
+        id->column = previous().column;
+        return id;
+    }
+
     if (match(TokenType::LPAREN)) {
+        // Could be a cast like (int*) or (type) or a parenthesized expression
+        // Try to detect if this is a cast
+        bool isCast = false;
+        size_t tempPos = current_;
+        int tokenCount = 0;
+        
+        // Scan to see if this looks like a cast
+        while (!isAtEnd() && !check(TokenType::RPAREN) && tokenCount < 10) {
+            if (check(TokenType::KEYWORD_INT) || check(TokenType::KEYWORD_CHAR) || 
+                check(TokenType::KEYWORD_VOID) || check(TokenType::IDENTIFIER) ||
+                check(TokenType::STAR) || check(TokenType::AMPERSAND)) {
+                advance();
+                tokenCount++;
+            } else {
+                break;
+            }
+        }
+        
+        // If we found ) and only type-like tokens, it's likely a cast
+        if (check(TokenType::RPAREN)) {
+            isCast = true;
+        }
+        
+        // Reset position
+        current_ = tempPos;
+        
+        if (isCast) {
+            // Skip the type cast - consume tokens until RPAREN
+            while (!check(TokenType::RPAREN) && !isAtEnd()) {
+                advance();
+            }
+            if (match(TokenType::RPAREN)) {
+                // Now parse the actual expression being cast
+                // Use parsePostfix to properly handle function calls like malloc()
+                return parsePostfix();
+            }
+        }
+        
+        // Not a cast, parse as normal parenthesized expression
         auto expr = parseExpression();
         consume(TokenType::RPAREN, "Expected ')' after expression");
         return expr;

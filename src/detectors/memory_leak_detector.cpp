@@ -1,5 +1,7 @@
 #include "detectors/memory_leak_detector.h"
 
+#include <iostream>
+
 namespace safec {
 
 void MemoryLeakDetector::analyze(Program& program) {
