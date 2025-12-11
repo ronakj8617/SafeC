@@ -1,54 +1,54 @@
+    Recommendation: Initialize pointer to NULL or valid address: char* replace = NULL;
 
-[591944] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14534] Buffer Overflow - HIGH
+    Location: Line 61, Column 5
+    Description: Use of unsafe function 'strcat' which does not perform bounds checking
+    Recommendation: Use strncat() instead and ensure proper null termination
 
-[591945] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14535] Buffer Overflow - HIGH
+    Location: Line 42, Column 13
+    Description: Use of unsafe function 'strncat' which does not perform bounds checking
+    Recommendation: Use a safer alternative with bounds checking
 
-[591946] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14536] Buffer Overflow - HIGH
+    Location: Line 55, Column 5
+    Description: Use of unsafe function 'strcat' which does not perform bounds checking
+    Recommendation: Use strncat() instead and ensure proper null termination
 
-[591947] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14537] Buffer Overflow - HIGH
+    Location: Line 63, Column 5
+    Description: Use of unsafe function 'strcat' which does not perform bounds checking
+    Recommendation: Use strncat() instead and ensure proper null termination
 
-[591948] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14538] Buffer Overflow - HIGH
+    Location: Line 124, Column 5
+    Description: Use of unsafe function 'wcscat' which does not perform bounds checking
+    Recommendation: Use a safer alternative with bounds checking
 
-[591949] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14539] Buffer Overflow - HIGH
+    Location: Line 61, Column 5
+    Description: Use of unsafe function 'wcscat' which does not perform bounds checking
+    Recommendation: Use a safer alternative with bounds checking
 
-[591950] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14540] Buffer Overflow - HIGH
+    Location: Line 55, Column 5
+    Description: Use of unsafe function 'wcscat' which does not perform bounds checking
+    Recommendation: Use a safer alternative with bounds checking
 
-[591951] Potential Integer Overflow - LOW
-    Location: Line 0, Column 0
-    Description: Unchecked arithmetic operation '*' could overflow
-    Recommendation: Add overflow checks before arithmetic operations, especially in loops or with user input
+[14541] Buffer Overflow - HIGH
+    Location: Line 63, Column 5
+    Description: Use of unsafe function 'wcscat' which does not perform bounds checking
+    Recommendation: Use a safer alternative with bounds checking
 
 --------------------------------------------------------------------------------
 Summary:
-  CRITICAL: 13787
-  HIGH:     150190
-  MEDIUM:   83668
-  LOW:      344306
+  CRITICAL: 1901
+  HIGH:     12532
+  MEDIUM:   108
 ================================================================================
 
 HTML report written to: JulietPipelineReport.html
 
 === Analysis Complete ===
 Full reports available in GitHub Actions artifacts.
-Run: https://github.com/ronakj8617/SafeC/actions/runs/20105953636
+Run: https://github.com/ronakj8617/SafeC/actions/runs/20140416094
